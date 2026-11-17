@@ -33,6 +33,15 @@ def normalize_label(label):
 
     return "UNDECIDED"
 
+def normalize_filters(filters):
+    normalized = {}
+
+    for key, matrix in filters.items():
+        label = normalize_label(key)
+        normalized[label] = matrix
+
+    return normalized
+
 
 # 3. 행렬 크기 검증
 def is_valid_matrix(matrix, size):
@@ -81,11 +90,11 @@ def classify_pattern(pattern, filter_a, filter_b):
 
 # 6. 연산 시간 측정
 def measure_mac_time(pattern, filter_a, filter_b, repeats=10):
+
     start_time = time.perf_counter()
 
     for _ in range(repeats):
         mac_operation(pattern, filter_a)
-        mac_operation(pattern, filter_b)
 
     end_time = time.perf_counter()
 
@@ -115,8 +124,10 @@ def run_json_mode(data):
             print(f"오류: {size_key} 필터를 찾을 수 없습니다.")
             continue
 
-        cross_filter = filters.get("cross")
-        x_filter = filters.get("x")
+        normalized_filters = normalize_filters(filters)
+
+        cross_filter = normalized_filters.get("Cross")
+        x_filter = normalized_filters.get("X")
 
         if not is_valid_matrix(cross_filter, size):
             print("오류: Cross 필터의 크기가 올바르지 않습니다.")
@@ -316,10 +327,35 @@ def user_input_mode():
     print(f"연산 시간(평균/10회): {average_time:.6f} ms")
 
 
-# 11. 프로그램 실행
-if __name__ == "__main__":
-    data = load_data()
 
-    if data:
-        run_json_mode(data)
-        run_performance_test(data)
+
+# 11. 프로그램 실행 메뉴
+def main():
+    while True:
+        print("\n=== Mini NPU Simulator ===")
+        print("1. 사용자 입력 모드 (3x3)")
+        print("2. JSON 데이터 분석 모드")
+        print("0. 프로그램 종료")
+
+        choice = input("\n메뉴 선택: ").strip()
+
+        if choice == "1":
+            user_input_mode()
+
+        elif choice == "2":
+            data = load_data()
+
+            if data:
+                run_json_mode(data)
+                run_performance_test(data)
+
+        elif choice == "0":
+            print("프로그램을 종료합니다.")
+            break
+
+        else:
+            print("잘못된 입력입니다. 0, 1, 2 중에서 선택하세요.")
+
+
+if __name__ == "__main__":
+    main()
